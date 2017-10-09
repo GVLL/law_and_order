@@ -29,7 +29,7 @@ def has_chapters():
     # chapters = [text[:-6] for text in parts if chapter_pattern.match(text)]
 
 
-def project_text(browser):
+def get_project_text(browser):
     soup = BeautifulSoup(str(browser.parsed()))
     full_text = soup.get_text()
     project_pattern = re.compile(r'(PROJETO\sDE\sLEI\sNº\s.*\nJUSTIFICATIVA\n)', flags=re.DOTALL)
@@ -47,7 +47,7 @@ def project_text(browser):
 def get_chapters(project_text):
     pass
 
-def get_articles(project_text)
+def get_articles(project_text):
     if has_chapters():
         pass
     article_pattern = re.compile(r'(Art.\s[1-9])')
@@ -98,6 +98,13 @@ def print_amendments(browser):
     for a in amendments:
         print(a)
 
+def print_articles(browser):
+    text, signature = get_project_text(browser)
+    articles = get_articles(text)
+    for art in articles:
+        print(art)
+        print('XXXXXXXXXXXX')
+
 def daily_projects():
     browser.open('http://www.camara.rj.gov.br/index_principal.php')
     od_link = browser.get_link("Ordem do Dia")
@@ -118,8 +125,9 @@ def daily_projects():
 if __name__ == '__main__':
     # daily_projects()
     # PME
-    browser.open('http://mail.camara.rj.gov.br/APL/Legislativos/scpro1720.nsf/0/832580830061f31883257f5e0064bd24?OpenDocument')
-    print_amendments(browser)
+    browser.open('http://mail.camara.rj.gov.br/APL/Legislativos/scpro1720.nsf/f6d54a9bf09ac233032579de006bfef6/832580830061f31883258060005de906?OpenDocument')
+    # print_amendments(browser)
+    print_articles(browser)
     print("FEITO")
 
 
