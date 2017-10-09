@@ -1,5 +1,7 @@
 import re
+from bs4 import BeautifulSoup
 from robobrowser import RoboBrowser
+
 
 
 prefix = 'http://mail.camara.rj.gov.br'
@@ -12,13 +14,46 @@ expand_coords = "242,0,306,18"
 AMENDMENT_ID = "Emenda Nº"
 
 def split_projects(text):
-    begin_id = re.compile(r'(\n[0-9,]+\s+EM\s)')
-    parts = begin_id.split(text)
+    begin_pattern = re.compile(r'(\n[0-9,]+\s+EM\s)')
+    parts = begin_pattern.split(text)
     projects = [(parts[i] + parts[i+1]).strip() for i in range(1, len(parts), 2)]
     return projects
 
-def project_text():
-    return text
+def has_chapters():
+    # TODO: implement
+    return False
+    # chapter_pattern = re.compile(r'(CAPÍTULO.*Art.\s[1-9])', flags=re.DOTALL)
+    # chapter_pattern = re.compile(r'(?=(CAPÍTULO.*(?=CAPÍTULO.*Art)))', flags=re.DOTALL)
+    # parts = chapter_pattern.split(project_text)
+    # take only parts with Capítulo and remove 'Art. [1-9]' (last 6 characters)
+    # chapters = [text[:-6] for text in parts if chapter_pattern.match(text)]
+
+
+def project_text(browser):
+    soup = BeautifulSoup(str(browser.parsed()))
+    full_text = soup.get_text()
+    project_pattern = re.compile(r'(PROJETO\sDE\sLEI\sNº\s.*\nJUSTIFICATIVA\n)', flags=re.DOTALL)
+    signature_pattern = re.compile(r'(Plenário\sTeotônio\sVillela.*(?=\nJUSTIFICATIVA\n))', flags=re.DOTALL)
+
+    parts = project_pattern.split(full_text)
+    project_text = [text for text in parts if project_pattern.match(text)][0]
+    parts = signature_pattern.split(project_text)
+    # discards JUSTIFICATIVA
+    project_text = parts[0]
+    signature = parts[1]
+
+    return project_text, signature
+
+def get_chapters(project_text):
+    pass
+
+def get_articles(project_text)
+    if has_chapters():
+        pass
+    article_pattern = re.compile(r'(Art.\s[1-9])')
+    parts = article_pattern.split(project_text)
+    articles = [(parts[i] + parts[i+1]).strip() for i in range(1, len(parts), 2)]
+    return articles
 
 
 def next_page(browser):
@@ -78,6 +113,7 @@ def daily_projects():
     body = browser.find('body')
     od_text = str(body.text)
     projects = split_projects(od_text)
+
 
 if __name__ == '__main__':
     # daily_projects()
