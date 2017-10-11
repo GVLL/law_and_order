@@ -1,7 +1,7 @@
 import re
 from bs4 import BeautifulSoup
 from robobrowser import RoboBrowser
-
+from project import Project
 
 
 prefix = 'http://mail.camara.rj.gov.br'
@@ -12,6 +12,12 @@ prev_coords = "85,3,157,18"
 expand_coords = "242,0,306,18"
 
 AMENDMENT_ID = "Emenda Nº"
+
+amendment_pattern = re.compile(r'(Texto\s*da\s*Emenda.*\nJUSTIFICATIVA\n)', flags=re.DOTALL)
+project_pattern = re.compile(r'(PROJETO\s*DE\s*LEI\s*Nº\s.*\nJUSTIFICATIVA\n)', flags=re.DOTALL)
+signature_pattern = re.compile(r'(Plenário\s*Teotônio\s*Villela.*(?=\nJUSTIFICATIVA\n))', flags=re.DOTALL)
+supporters_pattern = re.compile(r'(Com\s*o\s*apoio\s*dos\s*Senhores)')
+
 
 def split_projects(text):
     begin_pattern = re.compile(r'(\n[0-9,]+\s+EM\s)')
@@ -32,8 +38,6 @@ def has_chapters():
 def get_project_text(browser):
     soup = BeautifulSoup(str(browser.parsed()))
     full_text = soup.get_text()
-    project_pattern = re.compile(r'(PROJETO\sDE\sLEI\sNº\s.*\nJUSTIFICATIVA\n)', flags=re.DOTALL)
-    signature_pattern = re.compile(r'(Plenário\sTeotônio\sVillela.*(?=\nJUSTIFICATIVA\n))', flags=re.DOTALL)
 
     parts = project_pattern.split(full_text)
     project_text = [text for text in parts if project_pattern.match(text)][0]
@@ -122,20 +126,41 @@ def daily_projects():
     projects = split_projects(od_text)
 
 
+def modifying_amendment(browser):
+    pass
+
+
+def get_amendment_text(browser):
+    soup = BeautifulSoup(str(browser.parsed()))
+    full_text = soup.get_text()
+    parts = amendment_pattern.split(full_text)
+    amendment_text = [text for text in parts if amendment_pattern.match(text)][0]
+    parts = signature_pattern.split(amendment_text)
+    amendment_text = parts[0]
+    signature = parts[1]
+    parts = supporters_pattern.split(signature)
+    signature = parts[0]
+    # TODO: fix supporters
+    supporters = ''.join(parts[1:])
+
+    return amendment_text, signature
+
 if __name__ == '__main__':
+    projeto2056 = Project('PROJETO DE LEI Nº 2056/2016', 'http://mail.camara.rj.gov.br/APL/Legislativos/scpro1720.nsf/f6d54a9bf09ac233032579de006bfef6/832580830061f31883258060005de906?OpenDocument')
+    print(projeto2056)
     # daily_projects()
     # PME
-    browser.open('http://mail.camara.rj.gov.br/APL/Legislativos/scpro1720.nsf/f6d54a9bf09ac233032579de006bfef6/832580830061f31883258060005de906?OpenDocument')
+    # browser.open('http://mail.camara.rj.gov.br/APL/Legislativos/scpro1720.nsf/f6d54a9bf09ac233032579de006bfef6/832580830061f31883258060005de906?OpenDocument')
     # print_amendments(browser)
-    print_articles(browser)
-    print("FEITO")
+    # print_articles(browser)
+    # print("FEITO")
 
-
-# coords="335,1,436,17"   href="http://mail.camara.rj.gov.br/APL/Legislativos/scpro1720.nsf/$$Search?openform"
-# coords="162,3,232,17"   href="/APL/Legislativos/scpro1720.nsf/0cfaa89fb497093603257735005eb2bc/81c3ac25f843fada8325810600623c7e?OpenDocument&amp;CollapseView"
-#
-# coords="0,4,82,18"      href="/APL/Legislativos/scpro1720.nsf/0cfaa89fb497093603257735005eb2bc/81c3ac25f843fada8325810600623c7e?OpenDocument&amp;Start=1.1.1.20"
-# coords="85,3,157,18"    href="/APL/Legislativos/scpro1720.nsf/0cfaa89fb497093603257735005eb2bc/81c3ac25f843fada8325810600623c7e?OpenDocument&amp;Start=1"
-# coords="242,0,306,18"   href="/APL/Legislativos/scpro1720.nsf/0cfaa89fb497093603257735005eb2bc/81c3ac25f843fada8325810600623c7e?OpenDocument&amp;ExpandView"
-# http://mail.camara.rj.gov.br/APL/Legislativos/scpro1720.nsf/0/832580830061f31883257f5e0064bd24?OpenDocument&Start=1.1.1.188
-# http://mail.camara.rj.gov.br/APL/Legislativos/scpro1720.nsf/0/832580830061f31883257f5e0064bd24?OpenDocument&Start=1.1.1.188
+    # emenda modificativa
+    # browser.open('http://mail.camara.rj.gov.br/APL/Legislativos/scpro1720.nsf/f6d54a9bf09ac233032579de006bfef6/afd1bb9260ad9485832581a90047a3f3?OpenDocument')
+    # amendment_parts = get_amendment_text(browser)
+    #
+    # amendment_text = get_amendment_text(browser)[0]
+    #
+    # for p in amendment_parts:
+    #     print(p)
+    # print('HOP HA')
